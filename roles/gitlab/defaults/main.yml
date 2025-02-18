@@ -133,7 +133,7 @@ gitlab_merge_request_kolla_diff: |
       when: always
   parallel:
     matrix:
-      - KAYOBE_ENVIRONMENT: [production, test]
+      - KAYOBE_ENVIRONMENT: {{ gitlab_kayobe_environments }}
   script:
     - !reference [.get_secrets, script]
     - .automation/pipeline/config-diff.sh origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
@@ -597,7 +597,7 @@ gitlab_runbook_in_place_hypervisor_host_upgrade_drain_hypervisor: |
     - !reference [.active_stage_web_rule_no_manual, rules]
   stage: runbook-in-place-hypervisor-host-upgrade
   resource_group: runbook-in-place-hypervisor-host-upgrade
-  needs: [disable_compute_services]
+  needs: [a_disable_compute_services]
   script:
     - !reference [.kayobe_public_openrc, script]
     - !reference [.get_secrets, script]
@@ -608,7 +608,7 @@ gitlab_runbook_in_place_hypervisor_host_upgrade_package_update: |
   rules:
     - !reference [.active_stage_web_rule_no_manual, rules]
   stage: runbook-overcloud-service-upgrade
-  resource_group: runbook-overcloud-service-upgrade
+  resource_group: runbook-in-place-hypervisor-host-upgrade
   needs: [b_drain_hypervisor]
   script:
     - !reference [overcloud_host_package_update, script]

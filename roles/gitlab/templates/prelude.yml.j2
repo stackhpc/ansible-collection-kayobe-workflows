@@ -85,6 +85,8 @@ default:
       export BAO_TOKEN=$(curl --silent --request POST
       --data '{"role": "gitlab", "jwt": "'"$VAULT_AUTH_TOKEN"'"}'
       http://127.0.0.1:8200/v1/auth/jwt/login | jq -r '.auth.client_token')
+    - mkdir -p $HOME/.docker
+    - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
 
 .kayobe_automation_ssh_private_key: &kayobe_automation_ssh_private_key
   - >-
