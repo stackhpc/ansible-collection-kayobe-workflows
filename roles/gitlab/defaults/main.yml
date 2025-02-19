@@ -19,7 +19,7 @@ gitlab_tempest_test_suites: |
 
 gitlab_openstack_release: "2024.1"
 
-gitlab_stages: "{{ gitlab_default_stages | combine(gitlab_extra_stages) | combine(gitlab_runbooks) }}"
+gitlab_stages: "{{ gitlab_default_stages | combine(gitlab_extra_stages) | combine(gitlab_runbooks) | combine(gitlab_upstream_stages) }}"
 
 gitlab_default_stages:
   build:
@@ -44,10 +44,24 @@ gitlab_runbooks: "{{ gitlab_default_runbooks | combine(gitlab_extra_runbooks) }}
 gitlab_default_runbooks:
   runbook-overcloud-service-upgrade:
     "{{ gitlab_runbook_overcloud_service_upgrade }}"
+
+gitlab_extra_runbooks: {}
+
+gitlab_upstream_stages: "{{ gitlab_default_upstream_stages | combine(gitlab_extra_upstream_stages) }}"
+
+gitlab_default_upstream_stages:
+  upstream-runbook-in-place-hypervisor-host-upgrade:
+    "{{ gitlab_upstream_runbook_in_place_hypervisor_host_upgrade }}"
+
+gitlab_extra_upstream_stages: {}
+
+gitlab_downstream_stages: "{{ gitlab_default_downstream_stages | combine(gitlab_extra_downstream_stages) }}"
+
+gitlab_default_downstream_stages:
   runbook-in-place-hypervisor-host-upgrade:
     "{{ gitlab_runbook_in_place_hypervisor_host_upgrade }}"
 
-gitlab_extra_runbooks: {}
+gitlab_extra_downstream_stages: {}
 
 gitlab_stage_build: "{{ gitlab_stage_build_default | combine(gitlab_stage_build_extra) }}"
 
@@ -590,7 +604,6 @@ gitlab_runbook_in_place_hypervisor_host_upgrade_disable_compute_services: |
     - !reference [.kayobe_public_openrc, script]
     - !reference [.get_secrets, script]
     - .automation/pipeline/playbook-run.sh etc/kayobe/ansible/nova-compute-disable.yml
-  allow_failure: true
 
 gitlab_runbook_in_place_hypervisor_host_upgrade_drain_hypervisor: |
   rules:
@@ -602,7 +615,6 @@ gitlab_runbook_in_place_hypervisor_host_upgrade_drain_hypervisor: |
     - !reference [.kayobe_public_openrc, script]
     - !reference [.get_secrets, script]
     - .automation/pipeline/playbook-run.sh etc/kayobe/ansible/nova-compute-disable.yml
-  allow_failure: true
 
 gitlab_runbook_in_place_hypervisor_host_upgrade_package_update: |
   rules:
@@ -623,7 +635,6 @@ gitlab_runbook_in_place_hypervisor_reboot_hypervisor: |
     - !reference [.kayobe_public_openrc, script]
     - !reference [.get_secrets, script]
     - .automation/pipeline/playbook-run.sh etc/kayobe/ansible/reboot.yml
-  allow_failure: true
 
 gitlab_runbook_in_place_hypervisor_host_upgrade_enable_hypervisor: |
   rules:
@@ -635,4 +646,33 @@ gitlab_runbook_in_place_hypervisor_host_upgrade_enable_hypervisor: |
     - !reference [.kayobe_public_openrc, script]
     - !reference [.get_secrets, script]
     - .automation/pipeline/playbook-run.sh etc/kayobe/ansible/nova-compute-disable.yml
-  allow_failure: true
+
+gitlab_upstream_runbook_in_place_hypervisor_host_upgrade:
+  a_constructor: "{{ gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_constructor }}"
+  b_executor: "{{ gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_executor }}"
+
+gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_constructor: |
+  rules:
+    - !reference [.active_stage_web_rule, rules]
+  stage: upstream-runbook-in-place-hypervisor-host-upgrade
+  script:
+    - !reference [.kayobe_public_openrc, script]
+    - !reference [.get_secrets, script]
+    - .automation/pipeline/playbook-run.sh etc/kayobe/ansible/write-gitlab-pipeline.yml \
+      -t runbook_in_place_hypervisor_host_upgrade_trigger \
+      -e kayobe_automation_upgrade_group_name=$KAYOBE_AUTOMATION_UPGRADE_GROUP_NAME \
+      -e kayobe_automation_upgrade_batch_size=$KAYOBE_AUTOMATION_UPGRADE_BATCH_SIZE
+  artifacts:
+    name: runbook-in-place-hypervisor-host-upgrade-trigger.yml
+    expire_in: 1 hrs
+    when: always
+    paths:
+      - .gitlab/runbook-in-place-hypervisor-host-upgrade-trigger.yml
+
+gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_executor: |
+  stage: upstream-runbook-in-place-hypervisor-host-upgrade
+  needs: [a_constructor]
+  trigger:
+    include:
+      - artifact: runbook-in-place-hypervisor-host-upgrade-trigger.yml
+        job: gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_constructor
