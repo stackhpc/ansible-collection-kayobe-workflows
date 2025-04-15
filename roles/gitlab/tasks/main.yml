@@ -51,3 +51,4 @@
   loop: "{{ gitlab_downstream_stages.keys() }}"
   loop_control:
     loop_var: stage
+  when: gitlab_downstream_stages | length > 0
