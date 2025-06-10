@@ -1,0 +1,23 @@
+---
+{% set group_name = kayobe_automation_upgrade_group_name | default('compute') %}
+{% set groups_to_avoid = ['storage', 'controllers', 'ceph'] %}
+{% if kayobe_automation_upgrade_hosts is defined %}
+  {% set all_nodes = kayobe_automation_upgrade_hosts %}
+{% else %}
+  {%- set all_nodes = groups[group_name] %}
+{% endif %}
+{% set ns = namespace(nodes_to_upgrade=all_nodes) %}
+{% for group in groups_to_avoid %}
+{% set ns.nodes_to_upgrade = ns.nodes_to_upgrade | difference(groups[group] | default([])) %}
+{% endfor %}
+{% set nodes_to_upgrade = ns.nodes_to_upgrade | sort %}
+{%- set batch_size = kayobe_automation_upgrade_batch_size | default(3) | int %}
+runbook_inplace_upgrade_trigger:
+  stage: trigger
+  parallel:
+    matrix:
+{% for i in range(0, nodes_to_upgrade | length, batch_size) %}
+      - NODES: {{ nodes_to_upgrade[i:i + batch_size] | list }}
+{% endfor %}
+    trigger:
+      include: $CI_PROJECT_DIR/.gitlab/runbook-in-place-hypervisor-host-upgrade.yml

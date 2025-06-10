@@ -1,0 +1,9 @@
+---
+include:
+  - .gitlab/prelude.yml
+{%+ for job_name in gitlab_downstream_stages[stage].keys() +%}
+{%- if gitlab_downstream_stages[stage][job_name] +%}
+{{ job_name }}:
+  {{ gitlab_downstream_stages[stage][job_name] | indent(2) }}
+{%- endif -%}
+{%- endfor -%}

@@ -1,0 +1,54 @@
+---
+- name: Ensure output directory exists
+  ansible.builtin.file:
+    dest: "{{ item }}"
+    state: directory
+    mode: "755"
+  loop:
+    - "{{ gitlab_output_directory }}"
+    - "{{ gitlab_output_directory }}/.gitlab"
+  tags: always
+
+- name: Ensure gitlab-ci.yml entry point exists
+  ansible.builtin.template:
+    src: "gitlab-ci.yml.j2"
+    dest: "{{ gitlab_output_directory }}/.gitlab-ci.yml"
+    mode: "0644"
+
+- name: Ensure prelude.yml exists
+  ansible.builtin.template:
+    src: "prelude.yml.j2"
+    dest: "{{ gitlab_output_directory }}/.gitlab/prelude.yml"
+    mode: "0644"
+
+- name: Ensure runbook-in-place-hypervisor-host-upgrade-trigger exists
+  ansible.builtin.template:
+    src: "runbook-in-place-hypervisor-host-upgrade-trigger.yml.j2"
+    dest: "{{ gitlab_output_directory }}/.gitlab/runbook-in-place-hypervisor-host-upgrade-trigger.yml"
+    mode: "0644"
+  tags:
+    - never
+    - runbook-in-place-hypervisor-host-upgrade-trigger
+
+- name: Ensure pipeline stage files exist
+  ansible.builtin.template:
+    src: "stage.yml.j2"
+    dest: "{{ gitlab_output_directory }}/.gitlab/{{ stage }}.yml"
+    mode: "0644"
+  vars:
+    current_stage: "{{ stage }}"
+  loop: "{{ gitlab_stages.keys() }}"
+  loop_control:
+    loop_var: stage
+
+- name: Ensure downstream pipelines exist
+  ansible.builtin.template:
+    src: "downstream.yml.j2"
+    dest: "{{ gitlab_output_directory }}/.gitlab/{{ stage }}.yml"
+    mode: "0644"
+  vars:
+    current_stage: "{{ stage }}"
+  loop: "{{ gitlab_downstream_stages.keys() }}"
+  loop_control:
+    loop_var: stage
+  when: gitlab_downstream_stages | length > 0
