@@ -39,7 +39,7 @@ The following variables can be used to make small adjustments to the composition
 
 `github_kayobe_user_id`: set the user id when building the kayobe docker image. Default is `1000`
 
-`github_kayobe_group_id`: set the group id when building the kayobe docker image. Default is `1000` 
+`github_kayobe_group_id`: set the group id when building the kayobe docker image. Default is `1000`
 
 `github_environment_selector`: control the type of environment support the workflows should be generated with. Either `single` for fixed environment or `input` whereby the environment is controlled at `workflow_dispatch`. No environment is the default by setting `github_environment_selector` to no value or `Null`.
 
@@ -96,8 +96,8 @@ The following will override `github_workflows` to ensure only `Build Kayobe Imag
 
 ```yaml
 github_workflows:
-  - "{{ build_kayobe_image }}"
-  - "{{ run_kolla_config_diff }}"
+  - "{{ github_build_kayobe_image }}"
+  - "{{ github_run_kolla_config_diff }}"
 ```
 
 In the following example `github_build_kayobe_image` has been changed to use a user provided template stored within their `{{ playbook_dir }}/templates`
