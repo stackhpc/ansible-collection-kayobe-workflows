@@ -8,6 +8,15 @@ name: %% format_file_name(workflow.file_name, is_title=true) %%
 
 on:
   workflow_dispatch:
+    <%- if github_environment_selector == 'input' and (github_registry.share | default(github_default_registry.share)) is false +%>
+    inputs:
+      kayobe_environment:
+        description: |
+          Select the environment the kayobe workflow shall target.
+        type: choice
+        options: %% github_kayobe_environments %%
+    <%- endif +%>
+
 
 env:
   KAYOBE_USER_UID: %% github_kayobe_user_id %%
