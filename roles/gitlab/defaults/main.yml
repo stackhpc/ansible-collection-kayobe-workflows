@@ -674,5 +674,5 @@ gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_executor: |
   needs: [a_constructor]
   trigger:
     include:
-      - artifact: runbook-in-place-hypervisor-host-upgrade-trigger.yml
-        job: gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_constructor
+      - artifact: .gitlab/runbook-in-place-hypervisor-host-upgrade-trigger.yml
+        job: a_constructor
