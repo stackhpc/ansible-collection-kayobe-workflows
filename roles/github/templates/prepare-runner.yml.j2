@@ -1,3 +1,6 @@
+<%- if github_environment_selector == 'input' and (github_registry.share | default(github_default_registry.share)) is false -%>
+<%- set github_runs_on = github_runs_on + ['${{ matrix.environment }}'] -%>
+<%- endif -%>
 name: %% format_file_name(workflow.file_name, is_title=true) %%
 
 on:
@@ -9,6 +12,11 @@ on:
 
 jobs:
   prepare-runner:
+    <%- if github_environment_selector == 'input' and (github_registry.share | default(github_default_registry.share)) is false +%>
+    strategy:
+      matrix:
+        environment: %% github_kayobe_environments %%
+    <%- endif +%>
     runs-on: %% github_runs_on %%
     container:
       image: alpine:latest
