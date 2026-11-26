@@ -99,7 +99,7 @@ gitlab_stage_infra_vm_extra:
   infra_vm_something_new: "{{ gitlab_infra_vm_something_new }}"
 ```
 
-Finally, `gitlab_runbooks` is collection of runbooks which each compose a single stage that is designed complete a larger more involved task. For example upgrade overcloud services complete with backup of database and tempest testing both before and after. Runbooks are created similiar to normal jobs however they may need altering or even overriding to meet the needs of a given environment. 
+Finally, `gitlab_runbooks` is collection of runbooks which each compose a single stage that is designed complete a larger more involved task. For example upgrade overcloud services complete with backup of database and tempest testing both before and after. Runbooks are created similiar to normal jobs however they may need altering or even overriding to meet the needs of a given environment.
 
 Example Playbook
 ----------------
