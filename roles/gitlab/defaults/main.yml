@@ -670,6 +670,8 @@ gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_constructor: |
       - .gitlab/runbook-in-place-hypervisor-host-upgrade-trigger.yml
 
 gitlab_upstream_runbook_in_place_hypervisor_host_upgrade_executor: |
+  rules:
+      - !reference [.active_stage_web_rule, rules]
   stage: upstream-runbook-in-place-hypervisor-host-upgrade
   needs: [a_constructor]
   trigger:
